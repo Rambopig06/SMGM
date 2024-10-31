@@ -1,0 +1,66 @@
+@font-face {
+    font-family: 'IAMAPLAYER';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/IAMAPLAYER.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 로고 글씨체 */
+
+@font-face {
+    font-family: 'NanumBarunGothic';
+    font-style: normal;
+    font-weight: 400;
+    src: url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.eot');
+    src: url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.eot?#iefix') format('embedded-opentype'), url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.woff') format('woff'), url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.ttf') format('truetype');
+}
+
+/* 전체에 쓰일 깔끔한 글씨체 */
+
+@font-face {
+    font-family: 'KIMM_Bold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* 한국기계연구원 서체 */
+
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+#gameCanvas {
+    border: 2px solid #000;
+    margin-top: 50px;
+}
+
+.information {
+    width: 70vw;
+    margin: 20px 0 100px 0;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-family: 'NanumBarunGothic';
+} 
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    font-family: 'KIMM_Bold';
+}

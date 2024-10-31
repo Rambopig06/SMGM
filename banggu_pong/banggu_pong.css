@@ -1,0 +1,119 @@
+@font-face {
+    font-family: 'IAMAPLAYER';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/IAMAPLAYER.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 로고 글씨체 */
+
+@font-face {
+    font-family: 'NanumBarunGothic';
+    font-style: normal;
+    font-weight: 400;
+    src: url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.eot');
+    src: url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.eot?#iefix') format('embedded-opentype'), url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.woff') format('woff'), url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.ttf') format('truetype');
+}
+
+/* 전체에 쓰일 깔끔한 글씨체 */
+
+@font-face {
+    font-family: 'KIMM_Bold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* 한국기계연구원 서체 */
+
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    background-color: #f0f0f0;
+}
+
+
+section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin: 50px 0 50px 0;
+}   
+
+#gameCanvas {
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;    
+    margin-top: 20px;
+    width: 800px;
+    height: 400px;
+    background-color: #0c0041;
+    border-radius: 10px;
+    box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.5);
+}
+#startButton {
+    margin-top: 20px;
+    font-size: 24px;
+    padding: 10px 20px;
+    font-family: 'NanumBarunGothic';
+    background-color: #b38403;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'KIMM_Bold';
+}
+
+#canvasControls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    font-family: 'KIMM_Bold';
+}
+
+#canvasWidth, #canvasHeight {
+    margin: 0 10px;
+    font-family: 'KIMM_Bold';
+    font-size: 15px;
+    padding: 5px;
+    background-color: #000000;
+    color: #ffffff;
+}
+
+#resizeCanvas {
+    margin: 0 10px;
+    font-family: 'KIMM_Bold';
+    font-size: 15px;
+    padding: 5px;
+    background-color: #b38403;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.information {
+    width: 70vw;
+    margin-bottom: 50px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-family: 'NanumBarunGothic';
+}   
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    font-family: 'KIMM_Bold';
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMGM 로그인</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <a href="/main_site/index.html" class="logo">SMGM</a>
+
+    <form id="loginForm">
+        <table>
+            <tr>
+                <td><h2>로그인</h2></td>
+            </tr>
+            <tr>
+                <td><input type="text" id="userId" placeholder="ID"></td>
+            </tr>
+            <tr>
+                <td><input type="password" id="userPassword" placeholder="Password"></td>
+            </tr>
+            <tr>
+               <td><input type="checkbox" id="saveLogin"> 로그인 정보 저장</td>
+            </tr>
+            <tr>
+                <td><input type="submit" value="Sign in" class="btn"></td>
+            </tr>
+            <tr>
+                <td class="join"><a href="join.html">회원가입</a></td>
+            </tr>
+        </table>
+    </form>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const userId = document.getElementById('userId').value;
+            const userPassword = document.getElementById('userPassword').value;
+            
+            if (userId && userPassword) {
+                // 로그인 성공 시 세션 스토리지에 사용자 정보 저장
+                sessionStorage.setItem('loggedInUser', JSON.stringify({
+                    id: userId,
+                    nickname: userId // 실제로는 서버에서 닉네임을 받아와야 합니다.
+                }));
+                
+                alert('로그인 성공!');
+                window.location.href = '/main_site/index.html'; // 메인 페이지로 이동
+            } else {
+                alert('아이디와 비밀번호를 입력해주세요.');
+            }
+        });
+    </script>
+</body>
+</html>

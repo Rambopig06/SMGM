@@ -1,0 +1,116 @@
+@font-face {
+    font-family: 'IAMAPLAYER';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/IAMAPLAYER.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 로고 글씨체 */
+
+@font-face {
+    font-family: 'NanumBarunGothic';
+    font-style: normal;
+    font-weight: 400;
+    src: url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.eot');
+    src: url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.eot?#iefix') format('embedded-opentype'), url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.woff') format('woff'), url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.ttf') format('truetype');
+}
+
+/* 전체에 쓰일 깔끔한 글씨체 */
+
+
+@font-face {
+    font-family: 'KIMM_Bold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* 한국기계연구원 서체 */
+
+
+body {
+    background-image: url(../img/login_background.jpg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    display: block;
+}
+
+#logo {
+    text-align: center;
+    font-family: 'IAMAPLAYER';
+    color: #0c0041;
+    text-decoration: none;
+    font-size: 2em;
+    display: block;
+    margin-bottom: 20px;
+}
+
+#logo:hover {
+    color: #1a0066;
+}
+
+table {
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 40px;
+    border-radius: 20px;
+    width: 400px;
+    height: 340px;
+    margin: auto;
+    font-size: 15px;
+    font-family: 'NanumBarunGothic';
+    }
+
+
+.email {
+    width: 127px;
+    height: 32px;
+    font-size: 15px;
+    border: 0;
+    border-color: lightgray;
+    border-radius: 15px;
+    outline: none;
+    padding-left: 10px;
+    background-color: rgb(233,233,233);
+}
+.text {
+    width: 250px;
+    height: 32px;
+    font-size: 15px;
+    border: 0;
+    border-radius: 15px;
+    outline: none;
+    padding-left: 10px;
+    background-color: rgb(233,233,233);
+}
+select {
+    width: 100px;
+    height: 32px;
+    font-size: 15px;
+    border: 1;
+    border-color: lightgray;
+    border-radius: 15px;
+    outline: none;
+    padding-left: 10px;
+}
+.btn {
+    width: 262px;
+    height: 32px;
+    font-size: 15px;
+    border: 0;
+    border-radius: 15px;
+    outline: none;
+    padding-left: 10px;
+    background-color: rgb(164, 199, 255);
+}
+.btn:active {
+    width: 262px;
+    height: 32px;
+    font-size: 15px;
+    border: 0;
+    border-radius: 15px;
+    outline: none;
+    padding-left: 10px;
+    background-color: rgb(61, 135, 255);
+}

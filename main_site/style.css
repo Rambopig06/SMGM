@@ -1,0 +1,290 @@
+@font-face {
+    font-family: 'IAMAPLAYER';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/IAMAPLAYER.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* 로고 글씨체 */
+
+@font-face {
+    font-family: 'NanumBarunGothic';
+    font-style: normal;
+    font-weight: 400;
+    src: url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.eot');
+    src: url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.eot?#iefix') format('embedded-opentype'), url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.woff') format('woff'), url('//fastly.jsdelivr.net/font-nanumlight/1.0/NanumBarunGothicWeb.ttf') format('truetype');
+}
+
+/* 전체에 쓰일 깔끔한 글씨체 */
+
+
+@font-face {
+    font-family: 'KIMM_Bold';
+    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+}
+
+/* 한국기계연구원 서체 */
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+#featured-games {
+    background-color: white;
+    border-radius: 5px;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    height: auto;
+    padding: 20px;
+}
+
+#featured-games h2 {
+    font-family: 'IAMAPLAYER';
+}
+
+.slider-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.slider {
+    display: flex;
+    transition: transform 0.8s ease-in-out;
+    margin-bottom: 20px;
+}
+
+.slide {
+    flex: 0 0 100%;
+    min-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.slide a {
+    text-decoration: none;
+    color: black;
+    width: 70%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.slide img {
+    max-width: 100%;
+    height: auto;
+    max-height: 300px;
+    object-fit: contain;
+    border-radius: 5px;
+}
+
+.slide p {
+    font-family: 'NanumBarunGothic';
+    text-align: center;
+    font-size: 20px;
+    margin-top: 10px;
+}
+
+.slide img {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+    border-radius: 5px;
+}
+
+.prev, .next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: transparent;
+    color: #666;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    font-size: 24px;
+    transition: color 0.3s ease;
+}
+
+.prev:hover, .next:hover {
+    color: #333;
+}
+
+.prev {
+    left: 10px;
+}
+
+.next {
+    right: 10px;
+}
+
+.information {
+    width: 70vw;
+    margin-bottom: 50px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-family: 'NanumBarunGothic';
+}  
+
+footer {
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: 'KIMM_Bold';
+    margin-top: auto;
+}
+
+#game-descriptions {
+    margin: 50px 0;
+    padding: 20px;
+}
+
+.game-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 50px;
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.game-info.reverse {
+    flex-direction: row-reverse;
+}
+
+.game-text {
+    flex: 1;
+    padding: 20px;
+}
+
+.game-text h3 {
+    font-family: 'IAMAPLAYER';
+    font-size: 24px;
+    margin-bottom: 15px;
+    color: #0c0041;
+}
+
+.game-text p {
+    font-family: 'NanumBarunGothic';
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.game-video {
+    flex: 1;
+    padding: 20px;
+}
+
+.game-video video {
+    width: 100%;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .game-info, .game-info.reverse {
+        flex-direction: column;
+    }
+    
+    .game-text, .game-video {
+        width: 100%;
+    }
+}
+
+#chase-animation {
+    text-align: center;
+    margin: 50px 0;
+    padding: 20px;
+}
+
+#chase-animation h2 {
+    font-family: 'IAMAPLAYER';
+    font-size: 32px;
+    color: #0c0041;
+    margin: 0;
+}
+
+/* 프로젝트 설명 섹션 스타일 */
+#project-description {
+    background-color: white;
+    border-radius: 5px;
+    padding: 2rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+#project-description h2 {
+    font-family: 'IAMAPLAYER';
+    color: #0c0041;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.description-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.description-content {
+    padding: 20px;
+}
+
+.description-text h3 {
+    font-family: 'KIMM_Bold';
+    color: #0c0041;
+    margin-bottom: 15px;
+    font-size: 24px;
+}
+
+.description-text p {
+    font-family: 'NanumBarunGothic';
+    font-size: 16px;
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.description-text ul {
+    font-family: 'NanumBarunGothic';
+    padding-left: 20px;
+    margin-bottom: 15px;
+}
+
+.description-text li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+    color: #333;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    #project-description {
+        padding: 1rem;
+    }
+    
+    .description-content {
+        padding: 10px;
+    }
+}
+
+

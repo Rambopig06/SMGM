@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>똥 피하기 게임</title>
+    <link rel="stylesheet" href="dong_pehagi.css">
+    <link rel="icon" href="../img/SMGM_logo.PNG">
+</head>
+<body>
+    <header id="common-header"></header>
+    <script src="/js/common-header.js"></script>
+
+    <section>
+        <div id="gameContainer">
+            <canvas id="gameCanvas" width="400" height="600"></canvas>
+        </div>
+    </section>
+
+    <section>
+        <div class="information">
+            <h2>게임 설명</h2>
+            <p>이 게임은 당신이 테블릿으로 사람들에게 오더를 내려 똥을 피하는 게임입니다.</p>
+            <p>당신에게 여러명의 청결이 달려있어요!</p>
+            <p>님 게임실력이 안좋으면 저 사람들은 똥쟁이가 됩니다!!</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="information">
+            <h2>조작 키</h2>
+            <p>A 키 : 왼쪽 이동</p>
+            <p>D 키 : 오른쪽 이동</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 SMGM. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const player = {
+            x: canvas.width / 2,
+            y: canvas.height - 50,
+            width: 50,
+            height: 50,
+            speed: 5
+        };
+
+        const poops = [];
+        let score = 0;
+        let gameStarted = false;
+        let gameLoop;
+
+        const poopImage = new Image();
+        poopImage.src = '../img/poop.png';
+
+        const playerImage = new Image();
+        playerImage.src = '../img/humans.png';
+
+        const backgroundImage = new Image();
+        backgroundImage.src = '../img/dong_pehagi_sky.jpg';
+
+        function drawBackground() {
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+        }
+
+        function drawPlayer() {
+            ctx.drawImage(playerImage, player.x - player.width / 2, player.y - player.height / 2, player.width, player.height);
+        }
+
+        function drawPoops() {
+            poops.forEach(poop => {
+                ctx.drawImage(poopImage, poop.x - poop.size / 2, poop.y - poop.size / 2, poop.size, poop.size);
+            });
+        }
+
+        function drawScore() {
+            ctx.fillStyle = 'white';
+            ctx.font = '40px IAMAPLAYER';
+            ctx.textAlign = 'left';
+            ctx.fillText(score, 10, 30);
+        }
+
+        function drawStartButton() {
+            ctx.fillStyle = '#b38403';
+            ctx.fillRect(canvas.width / 2 - 60, canvas.height / 2 - 20, 120, 40);
+            ctx.fillStyle = 'white';
+            ctx.font = '20px KIMM_Bold';
+            ctx.textAlign = 'center';
+            ctx.fillText('게임 시작', canvas.width / 2, canvas.height / 2 + 7);
+        }
+
+        function movePlayer() {
+            if (keys.KeyA && player.x > player.width / 2) {
+                player.x -= player.speed;
+            }
+            if (keys.KeyD && player.x < canvas.width - player.width / 2) {
+                player.x += player.speed;
+            }
+        }
+
+        function createPoop() {
+            const poop = {
+                x: Math.random() * canvas.width,
+                y: 0,
+                size: Math.random() * 20 + 20,
+                speed: Math.random() * 2 + 1
+            };
+            poops.push(poop);
+        }
+
+        function movePoops() {
+            poops.forEach((poop, index) => {
+                poop.y += poop.speed;
+                if (poop.y > canvas.height) {
+                    poops.splice(index, 1);
+                    score++;
+                }
+            });
+        }
+
+        function checkCollision() {
+            poops.forEach((poop, index) => {
+                const dx = player.x - poop.x;
+                const dy = player.y - poop.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < (player.width / 2 + poop.size / 2)) {
+                    gameOver();
+                }
+            });
+        }
+
+        function gameOver() {
+            cancelAnimationFrame(gameLoop);
+            alert(`게임 오버! 최종 점수: ${score}`);
+            gameStarted = false;
+        }
+
+        function resetGame() {
+            player.x = canvas.width / 2;
+            poops.length = 0;
+            score = 0;
+        }
+
+        function update() {
+            drawBackground();
+
+            if (gameStarted) {
+                movePlayer();
+                movePoops();
+                checkCollision();
+
+                if (Math.random() < 0.02) {
+                    createPoop();
+                }
+
+                drawPoops();
+                drawPlayer();
+                drawScore();
+
+                gameLoop = requestAnimationFrame(update);
+            } else {
+                drawStartButton();
+            }
+        }
+
+        const keys = {};
+
+        document.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            if (!gameStarted &&
+                x > canvas.width / 2 - 60 &&
+                x < canvas.width / 2 + 60 &&
+                y > canvas.height / 2 - 20 &&
+                y < canvas.height / 2 + 20) {
+                gameStarted = true;
+                resetGame();
+                gameLoop = requestAnimationFrame(update);
+            }
+        });
+
+        update();
+    </script>
+    <script src="/js/common.js"></script>
+</body>
+</html>

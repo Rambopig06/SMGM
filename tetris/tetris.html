@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../img/SMGM_logo.PNG">
+    <link rel="stylesheet" href="tetris.css">
+    <title>테트리스 게임</title>
+</head>
+<body>
+    <header id="common-header"></header>
+    <script src="/js/common-header.js"></script>
+
+    <section>
+        <button id="startButton">게임 시작</button>
+
+        <div id="gameContainer">
+            <div id="canvasContainer">
+                <canvas id="holdPieceCanvas" width="120" height="120"></canvas>
+                <div>
+                    <canvas id="gameCanvas" width="300" height="600"></canvas>
+                    <div id="score">점수: 0</div>
+                </div>
+                <canvas id="nextPieceCanvas" width="120" height="120"></canvas>
+            </div>
+        </div>  
+
+        <div class="information">
+            <h2>조작 키</h2>
+            <p>← → : 이동, ↑ : 회전, ↓ : 소프트 드롭, 스페이스 : 하드 드롭, Shift : 홀드</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024  SMGM. All rights reserved.</p>
+    </footer>
+
+    <audio id="bgMusic" loop>
+        <source src="path/to/your/music.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const nextPieceCanvas = document.getElementById('nextPieceCanvas');
+        const nextPieceCtx = nextPieceCanvas.getContext('2d');
+        const holdPieceCanvas = document.getElementById('holdPieceCanvas');
+        const holdPieceCtx = holdPieceCanvas.getContext('2d');
+        const bgMusic = document.getElementById('bgMusic');
+        const startButton = document.getElementById('startButton');
+
+        const ROWS = 20;
+        const COLS = 10;
+        const BLOCK_SIZE = 30;
+        const COLORS = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#00FFFF', '#FF00FF', '#FFA500'];
+
+        let board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+        let currentPiece;
+        let nextPiece;
+        let holdPiece = null;
+        let canHold = true;
+        let score = 0;
+        let gameInterval;
+        let isGameRunning = false;
+
+        const SHAPES = [
+            [[1, 1, 1, 1]],
+            [[1, 1], [1, 1]],
+            [[1, 1, 1], [0, 1, 0]],
+            [[1, 1, 1], [1, 0, 0]],
+            [[1, 1, 1], [0, 0, 1]],
+            [[1, 1, 0], [0, 1, 1]],
+            [[0, 1, 1], [1, 1, 0]]
+        ];
+
+        function createPiece() {
+            const shapeIndex = Math.floor(Math.random() * SHAPES.length);
+            const colorIndex = Math.floor(Math.random() * COLORS.length);
+            return {
+                shape: SHAPES[shapeIndex],
+                color: COLORS[colorIndex],
+                x: Math.floor(COLS / 2) - Math.floor(SHAPES[shapeIndex][0].length / 2),
+                y: 0
+            };
+        }
+
+        function drawBoard() {
+            for (let y = 0; y < ROWS; y++) {
+                for (let x = 0; x < COLS; x++) {
+                    if (board[y][x]) {
+                        ctx.fillStyle = COLORS[board[y][x] - 1];
+                        ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        ctx.strokeStyle = '#000';
+                        ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                }
+            }
+        }
+
+        function drawPiece(piece, context, offsetX = 0, offsetY = 0) {
+            context.fillStyle = piece.color;
+            for (let y = 0; y < piece.shape.length; y++) {
+                for (let x = 0; x < piece.shape[y].length; x++) {
+                    if (piece.shape[y][x]) {
+                        context.fillRect((x + offsetX) * BLOCK_SIZE, (y + offsetY) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                        context.strokeStyle = '#000';
+                        context.strokeRect((x + offsetX) * BLOCK_SIZE, (y + offsetY) * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+                    }
+                }
+            }
+        }
+
+        function drawNextPiece() {
+            nextPieceCtx.clearRect(0, 0, nextPieceCanvas.width, nextPieceCanvas.height);
+            const offsetX = (4 - nextPiece.shape[0].length) / 2;
+            const offsetY = (4 - nextPiece.shape.length) / 2;
+            drawPiece(nextPiece, nextPieceCtx, offsetX, offsetY);
+        }
+
+        function drawHoldPiece() {
+            holdPieceCtx.clearRect(0, 0, holdPieceCanvas.width, holdPieceCanvas.height);
+            if (holdPiece) {
+                const offsetX = (4 - holdPiece.shape[0].length) / 2;
+                const offsetY = (4 - holdPiece.shape.length) / 2;
+                drawPiece(holdPiece, holdPieceCtx, offsetX, offsetY);
+            }
+        }
+
+        function moveDown() {
+            currentPiece.y++;
+            if (collision()) {
+                currentPiece.y--;
+                mergePiece();
+                removeRows();
+                currentPiece = nextPiece;
+                nextPiece = createPiece();
+                drawNextPiece();
+                canHold = true;
+                if (collision()) {
+                    gameOver();
+                }
+            }
+        }
+
+        function moveLeft() {
+            currentPiece.x--;
+            if (collision()) {
+                currentPiece.x++;
+            }
+        }
+
+        function moveRight() {
+            currentPiece.x++;
+            if (collision()) {
+                currentPiece.x--;
+            }
+        }
+
+        function rotate() {
+            const rotated = currentPiece.shape[0].map((_, i) =>
+                currentPiece.shape.map(row => row[i]).reverse()
+            );
+            const previousShape = currentPiece.shape;
+            currentPiece.shape = rotated;
+            if (collision()) {
+                currentPiece.shape = previousShape;
+            }
+        }
+
+        function collision() {
+            for (let y = 0; y < currentPiece.shape.length; y++) {
+                for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                    if (currentPiece.shape[y][x] &&
+                        (board[y + currentPiece.y] === undefined ||
+                         board[y + currentPiece.y][x + currentPiece.x] === undefined ||
+                         board[y + currentPiece.y][x + currentPiece.x])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function mergePiece() {
+            for (let y = 0; y < currentPiece.shape.length; y++) {
+                for (let x = 0; x < currentPiece.shape[y].length; x++) {
+                    if (currentPiece.shape[y][x]) {
+                        board[y + currentPiece.y][x + currentPiece.x] = COLORS.indexOf(currentPiece.color) + 1;
+                    }
+                }
+            }
+        }
+
+        function removeRows() {
+            let rowsCleared = 0;
+            for (let y = ROWS - 1; y >= 0; y--) {
+                if (board[y].every(cell => cell !== 0)) {
+                    board.splice(y, 1);
+                    board.unshift(Array(COLS).fill(0));
+                    rowsCleared++;
+                }
+            }
+            if (rowsCleared > 0) {
+                score += rowsCleared * 100;
+                scoreElement.textContent = `점수: ${score}`;
+            }
+        }
+
+        function resetGame() {
+            board = Array(ROWS).fill().map(() => Array(COLS).fill(0));
+            score = 0;
+            scoreElement.textContent = `점수: ${score}`;
+            currentPiece = createPiece();
+            nextPiece = createPiece();
+            holdPiece = null;
+            canHold = true;
+            drawNextPiece();
+            drawHoldPiece();
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBoard();
+            drawPiece(currentPiece, ctx, currentPiece.x, currentPiece.y);
+        }
+
+        function hardDrop() {
+            while (!collision()) {
+                currentPiece.y++;
+            }
+            currentPiece.y--;
+            mergePiece();
+            removeRows();
+            currentPiece = nextPiece;
+            nextPiece = createPiece();
+            drawNextPiece();
+            canHold = true;
+            if (collision()) {
+                gameOver();
+            }
+            update();
+        }
+
+        function holdPieceFunction() {
+            if (!canHold) return;
+            
+            if (holdPiece === null) {
+                holdPiece = {...currentPiece};
+                currentPiece = nextPiece;
+                nextPiece = createPiece();
+                drawNextPiece();
+            } else {
+                const temp = {...currentPiece};
+                currentPiece = holdPiece;
+                holdPiece = temp;
+            }
+            
+            currentPiece.x = Math.floor(COLS / 2) - Math.floor(currentPiece.shape[0].length / 2);
+            currentPiece.y = 0;
+            canHold = false;
+            drawHoldPiece();
+        }
+
+        function gameOver() {
+            isGameRunning = false;
+            clearInterval(gameInterval);
+            alert('게임 오버!');
+            startButton.style.display = 'block';
+        }
+
+        function startGame() {
+            if (isGameRunning) return;
+            
+            isGameRunning = true;
+            resetGame();
+            startButton.style.display = 'none';
+            
+            gameInterval = setInterval(() => {
+                moveDown();
+                update();
+            }, 500 / 1.2);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!isGameRunning) return;
+
+            // 게임 조작 키에 대해서만 기본 동작 방지
+            if (['ArrowLeft', 'ArrowRight', 'ArrowDown', 'ArrowUp', ' ', 'Shift'].includes(e.key)) {
+                e.preventDefault();
+            }
+
+            switch (e.key) {
+                case 'ArrowLeft':
+                    moveLeft();
+                    break;
+                case 'ArrowRight':
+                    moveRight();
+                    break;
+                case 'ArrowDown':
+                    moveDown();
+                    break;
+                case 'ArrowUp':
+                    rotate();
+                    break;
+                case ' ':
+                    hardDrop();
+                    break;
+                case 'Shift':
+                    holdPieceFunction();
+                    break;
+            }
+            update();
+        });
+
+        startButton.addEventListener('click', startGame);
+
+        // 배경음악 재생
+        document.addEventListener('click', () => {
+            bgMusic.play();
+        });
+
+        // 초기 게임 보드 그리기
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = '#000';
+        ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    </script>
+    <script src="/js/common.js"></script>
+</body>
+</html>

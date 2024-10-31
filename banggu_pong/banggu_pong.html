@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>방구 퐁</title>
+    <link rel="stylesheet" href="banggu_pong.css">
+    <link rel="icon" href="../img/SMGM_logo.PNG">
+</head>
+<body>
+    <header id="common-header"></header>
+    <script src="/js/common-header.js"></script>
+
+
+    <section>
+        <div class="information">
+            <h2>최고 점수</h2>
+            <p id="highScore">0</p>
+        </div>
+    </section>
+
+    <div id="userScore" class="user-score"></div>
+
+    <section>
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        <button id="startButton">게임 시작</button>  
+    </section>
+
+    <section>
+        <div class="information">
+            <h2>게임 설명</h2>
+            <p>여러분 , 사실 슈퍼맨은 방귀로 날아다니는거 아세요?</p>
+            <p>이 게임은 숲속에서 대나무들을 방귀로 피하며 날아다니는 게임입니다.</p>
+            <p>대나무를 피하면 점수가 올라가고, 대나무에 부딫히면 게임이 종료됩니다.</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="information">
+            <h2>조작 키</h2>
+            <p>W 키 : 점프</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy;  2024  SMGM. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startButton = document.getElementById('startButton');
+
+        let bird = {
+            x: 50,
+            y: 200,
+            width: 40,
+            height: 40,
+            velocity: 0,
+            gravity: 0.5,
+            jump: -10
+        };
+
+        let pipes = [];
+        let score = 0;
+        let gameOver = false;
+        let gameStarted = false;
+        let highScore = 0;
+        let userId = ""; // 사용자 아이디를 저장할 변수
+
+        const backgroundImage = new Image();
+        backgroundImage.src = '../img/forest.jpg';
+
+        const superheroImage = new Image();
+        superheroImage.src = '../img/superhero.png';
+
+        function drawBird() {
+            ctx.drawImage(superheroImage, bird.x, bird.y, bird.width, bird.height);
+        }
+
+        function drawPipes() {
+            pipes.forEach(pipe => {
+                ctx.fillStyle = 'green';
+                ctx.fillRect(pipe.x, 0, pipe.width, pipe.top);
+                ctx.fillRect(pipe.x, pipe.bottom, pipe.width, canvas.height - pipe.bottom);
+            });
+        }
+
+        function updateBird() {
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+
+            if (bird.y + bird.height > canvas.height) {
+                bird.y = canvas.height - bird.height;
+                gameOver = true;
+            }
+
+            if (bird.y < 0) {
+                bird.y = 0;
+            }
+        }
+
+        function updatePipes() {
+            if (pipes.length === 0 || pipes[pipes.length - 1].x < canvas.width - 200) {
+                const gap = 150;
+                const pipeTop = Math.random() * (canvas.height - gap - 100) + 50;
+                pipes.push({
+                    x: canvas.width,
+                    top: pipeTop,
+                    bottom: pipeTop + gap,
+                    width: 50,
+                    counted: false
+                });
+            }
+
+            pipes.forEach(pipe => {
+                pipe.x -= 2;
+
+                if (pipe.x + pipe.width < 0) {
+                    pipes.shift();
+                }
+
+                if (!pipe.counted && pipe.x + pipe.width < bird.x) {
+                    updateScore(); // score++ 대신 updateScore() 호출
+                    pipe.counted = true;
+                }
+
+                if (bird.x + bird.width > pipe.x && bird.x < pipe.x + pipe.width &&
+                    (bird.y < pipe.top || bird.y + bird.height > pipe.bottom)) {
+                    gameOver = true;
+                }
+            });
+        }
+
+        function drawScore() {
+            ctx.font = '40px IAMAPLAYER';
+            ctx.fillStyle = 'white';
+            ctx.fillText(score, 10, 30);
+        }
+
+        function updateScore() {
+            score++;
+            updateUserScore();
+        }
+
+        function updateUserScore() {
+            const userScoreElement = document.getElementById('userScore');
+            userScoreElement.textContent = `${userId}: ${score}점`;
+        }
+
+        function updateHighScore() {
+            if (score > highScore) {
+                highScore = score;
+                document.getElementById('highScore').textContent = highScore;
+                
+                // 로컬 스토리지에 최고 점수 저장
+                localStorage.setItem('bangguPongHighScore', highScore);
+                
+                // 서버에 최고 점수 전송 (가정)
+                sendHighScoreToServer(highScore);
+            }
+        }
+
+        function sendHighScoreToServer(score) {
+            // 여기에 서버로 점수를 전송하는 코드를 추가하세요
+            // 예: fetch('/api/update-score', { method: 'POST', body: JSON.stringify({ score }) });
+        }
+
+        function gameLoop() {
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+
+            if (gameStarted && !gameOver) {
+                updateBird();
+                updatePipes();
+                drawBird();
+                drawPipes();
+                drawScore();
+                updateHighScore();
+                requestAnimationFrame(gameLoop);
+            } else if (gameOver) {
+                ctx.font = '48px KIMM_Bold';
+                ctx.fillStyle = 'red';
+                ctx.fillText('슈퍼맨 사1망..', canvas.width / 2 - 100, canvas.height / 2);
+                ctx.font = '24px NanumBarunGothic';
+                ctx.fillText(`너가 활약한 수치는??ㅋㅋ: ${score} 점`, canvas.width / 2 - 70, canvas.height / 2 + 40);
+                startButton.style.display = 'block';
+                updateHighScore();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key.toLowerCase() === 'w' && gameStarted && !gameOver) {
+                bird.velocity = bird.jump * 0.7;  // 점프 높이를 0.7배로 줄임
+            }
+        });
+
+        startButton.addEventListener('click', () => {
+            bird.y = canvas.height / 2;
+            bird.velocity = 0;
+            pipes = [];
+            score = 0;
+            gameOver = false;
+            gameStarted = true;
+            startButton.style.display = 'none';
+            updateUserScore(); // 점수 초기화
+            gameLoop();
+        });
+
+        // 초기 화면 그리기
+        backgroundImage.onload = () => {
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+        };
+
+        // 페이지 로드 시 최고 점수 불러오기 및 사용자 아이디 설정
+        window.addEventListener('load', async () => {
+            const savedHighScore = localStorage.getItem('bangguPongHighScore');
+            if (savedHighScore) {
+                highScore = parseInt(savedHighScore);
+                document.getElementById('highScore').textContent = highScore;
+            }
+
+            await fetchUserId(); // 사용자 아이디 가져오기
+            updateUserScore(); // 초기 점수 표시
+        });
+
+        // 사용자 아이디를 가져오는 함수
+        async function fetchUserId() {
+            try {
+                const response = await fetch('/api/get-user-id'); // 서버의 실제 엔드포인트로 변경해야 합니다
+                if (response.ok) {
+                    const data = await response.json();
+                    userId = data.userId;
+                    updateUserScore(); // 사용자 아이디를 가져온 후 점수 표시 업데이트
+                } else {
+                    console.error('Failed to fetch user ID');
+                    userId = "게스트"; // 실패 시 기본값 설정
+                }
+            } catch (error) {
+                console.error('Error fetching user ID:', error);
+                userId = "게스트"; // 오류 발생 시 기본값 설정
+            }
+        }
+    </script>
+    <script src="/js/common.js"></script>
+</body>
+</html>

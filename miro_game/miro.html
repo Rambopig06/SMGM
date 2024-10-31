@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="miro.css">
+    <link rel="icon" href="../img/SMGM_logo.PNG">
+    <title>SMGM 미로 탈출</title>
+    <style>
+        #canvasControls {
+            margin-bottom: 10px;
+        }
+        #canvasControls input {
+            width: 50px;
+        }
+    </style>
+</head>
+<body>
+    <header id="common-header"></header>
+    <script src="/js/common-header.js"></script>
+
+    
+    <section>
+        <canvas id="gameCanvas" width="700" height="700"></canvas>
+    </section>
+
+    <section>
+        <div id="canvasControls">
+            <label for="canvasSize">캔버스 크기:</label>
+            <input type="number" id="canvasSize" value="700" min="300" max="800">
+            <button id="resizeCanvas">크기 변경</button>
+            <p>캔버스 크기는 (300~800)으로 설정해야 합니다.</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="information">
+            <h2>게임 설명</h2>
+            <p>이 게임은.....엄</p>
+            <p>굳이 설명 안해도 알거라 믿어요</p>
+            <p>캔버스 크기 위에서 알아서 바꾸셈 ㅇㅇ</p>
+        </div>
+    </section>
+
+    <section>
+        <div class="information">
+            <h2>조작 키</h2>
+            <p>WASD : 이동</p>
+        </div>
+    </section>
+    <footer>
+        <p>&copy; 2024  SMGM. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const sizeInput = document.getElementById('canvasSize');
+        const resizeButton = document.getElementById('resizeCanvas');
+
+        let mazeSize = 31; // 홀수로 설정
+        let tileSize = Math.floor(Math.min(canvas.width, canvas.height) / mazeSize);
+
+        let maze = [];
+        let playerX = 1;
+        let playerY = 1;
+        let gameStarted = false;
+        let moveInterval;
+        const moveSpeed = 50; // 이동 속도 (밀리초)
+
+        // 시작 버튼 설정
+        let startButton = {
+            x: canvas.width / 2 - 75,
+            y: canvas.height / 2 - 25,
+            width: 150,
+            height: 50
+        };
+
+        function resizeCanvas() {
+            const newSize = parseInt(sizeInput.value);
+            
+            if (newSize >= 300 && newSize <= 800) {
+                canvas.width = newSize;
+                canvas.height = newSize;
+                tileSize = Math.floor(canvas.width / mazeSize);
+                
+                // 시작 버튼 위치 재조정
+                startButton = {
+                    x: canvas.width / 2 - 75,
+                    y: canvas.height / 2 - 25,
+                    width: 150,
+                    height: 50
+                };
+
+                if (gameStarted) {
+                    resetGame();
+                } else {
+                    drawStartScreen();
+                }
+            } else {
+                alert('유효한 캔버스 크기를 입력해주세요 (300-800).');
+            }
+        }
+
+        resizeButton.addEventListener('click', resizeCanvas);
+
+        function drawStartScreen() {
+            ctx.fillStyle = 'lightgray';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 시작 버튼 그리기
+            ctx.fillStyle = '#b38403';
+            ctx.fillRect(startButton.x, startButton.y, startButton.width, startButton.height);
+            
+            ctx.fillStyle = 'white';
+            ctx.font = '24px KIMM_Bold';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('시작', canvas.width / 2, canvas.height / 2);
+
+            ctx.fillStyle = 'black';
+            ctx.font = '30px KIMM_Bold';
+            ctx.fillText('미로 탈출 게임', canvas.width / 2, canvas.height / 2 - 100);
+        }
+
+        function generateMaze() {
+            maze = Array(mazeSize).fill().map(() => Array(mazeSize).fill(1));
+
+            function carve(x, y) {
+                maze[y][x] = 0;
+                const directions = [[0, -2], [2, 0], [0, 2], [-2, 0]];
+                directions.sort(() => Math.random() - 0.5);
+
+                for (let [dx, dy] of directions) {
+                    const nx = x + dx, ny = y + dy;
+                    if (nx > 0 && nx < mazeSize - 1 && ny > 0 && ny < mazeSize - 1 && maze[ny][nx] === 1) {
+                        maze[y + dy/2][x + dx/2] = 0;
+                        carve(nx, ny);
+                    }
+                }
+            }
+
+            carve(1, 1);
+
+            // Find the longest path
+            let longestPath = [];
+            let visited = Array(mazeSize).fill().map(() => Array(mazeSize).fill(false));
+
+            function dfs(x, y, path) {
+                if (x < 0 || x >= mazeSize || y < 0 || y >= mazeSize || maze[y][x] === 1 || visited[y][x]) {
+                    return;
+                }
+
+                visited[y][x] = true;
+                path.push([x, y]);
+
+                if (path.length > longestPath.length) {
+                    longestPath = [...path];
+                }
+
+                const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+                for (let [dx, dy] of directions) {
+                    dfs(x + dx, y + dy, path);
+                }
+
+                path.pop();
+                visited[y][x] = false;
+            }
+
+            dfs(1, 1, []);
+
+            // Set start and end points
+            maze[1][1] = 0;
+            let [endX, endY] = longestPath[longestPath.length - 1];
+            maze[endY][endX] = 2;
+        }
+
+        function drawMaze() {
+            for (let y = 0; y < maze.length; y++) {
+                for (let x = 0; x < maze[y].length; x++) {
+                    if (maze[y][x] === 1) {
+                        ctx.fillStyle = 'black';
+                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                    } else if (maze[y][x] === 2) {
+                        ctx.fillStyle = 'green';
+                        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+                    }
+                }
+            }
+        }
+
+        function drawPlayer() {
+            ctx.beginPath();
+            ctx.arc(playerX * tileSize + tileSize / 2, playerY * tileSize + tileSize / 2, tileSize / 2 - 2, 0, Math.PI * 2);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawMaze();
+            drawPlayer();
+        }
+
+        function movePlayer(dx, dy) {
+            if (!gameStarted) return;
+
+            const newX = playerX + dx;
+            const newY = playerY + dy;
+
+            if (maze[newY][newX] !== 1) {
+                playerX = newX;
+                playerY = newY;
+
+                if (maze[newY][newX] === 2) {
+                    alert('요올 생각보다 똑똑하누 ㅊㅋㅊㅋ');
+                    resetGame();
+                }
+            }
+
+            update();
+        }
+
+        function startMoving(dx, dy) {
+            if (moveInterval) clearInterval(moveInterval);
+            movePlayer(dx, dy);
+            moveInterval = setInterval(() => movePlayer(dx, dy), moveSpeed);
+        }
+
+        function stopMoving() {
+            if (moveInterval) {
+                clearInterval(moveInterval);
+                moveInterval = null;
+            }
+        }
+
+        function startGame() {
+            gameStarted = true;
+            document.body.classList.add('locked'); // 스크롤 잠금
+            resetGame();
+        }
+
+        function resetGame() {
+            document.body.classList.remove('locked'); // 게임 리셋 시 스크롤 해제
+            generateMaze();
+            playerX = 1;
+            playerY = 1;
+            update();
+        }
+
+        canvas.addEventListener('click', (e) => {
+            if (!gameStarted) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                if (x > startButton.x && x < startButton.x + startButton.width &&
+                    y > startButton.y && y < startButton.y + startButton.height) {
+                    startGame();
+                }
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (!gameStarted) return;
+            
+            switch (e.key.toLowerCase()) {
+                case 'w':
+                    startMoving(0, -1);
+                    break;
+                case 's':
+                    startMoving(0, 1);
+                    break;
+                case 'a':
+                    startMoving(-1, 0);
+                    break;
+                case 'd':
+                    startMoving(1, 0);
+                    break;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (['w', 'a', 's', 'd'].includes(e.key.toLowerCase())) {
+                stopMoving();
+            }
+        });
+
+        // 초기 시작 화면 그리기
+        drawStartScreen();
+
+         // 게임 종료 시 호출되는 함수
+         function endGame(score) {
+            saveGameScore('miro', score);
+            displayGameScores('miro', 'scores-container');
+        }
+
+        // 페이지 로드 시 스코어 표시
+        document.addEventListener('DOMContentLoaded', () => {
+            displayGameScores('miro', 'scores-container');
+        });
+    </script>
+    
+    <script src="/js/common.js"></script>
+</body>
+</html>

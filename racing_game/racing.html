@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>장애물 피하기</title>
+    <link rel="stylesheet" href="racing.css">
+    <link rel="icon" href="../img/SMGM_logo.PNG">
+</head>
+<body>
+    <header id="common-header"></header>
+    <script src="/js/common-header.js"></script>
+
+    <section>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="150"></canvas>
+        <div id="overlay">
+            <div id="startMessage">아무 키나 눌러 시작</div>
+        </div>
+    </div>
+    <div class="score">
+        <p>Score: <span id="score">0</span></p>
+    </div>
+    <div class="information">
+        <h2>조작 키</h2>
+        <p>화살표 위 : 점프</p>
+        <p>화살표 좌우 : 좌우 이동</p>
+    </div>
+    </section>
+    
+    <footer>
+        <p>&copy; 2024  SMGM. All rights reserved.</p>
+    </footer>
+    
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const overlay = document.getElementById('overlay');
+        const startMessage = document.getElementById('startMessage');
+        const gameContainer = document.getElementById('gameContainer');
+    
+        const player = {
+            x: 400,
+            y: canvas.height - 16,
+            radius: 16,
+            speed: 5,
+            jumping: false,
+            yVelocity: 0
+        };
+    
+        class Obstacle {
+            constructor(type) {
+                this.type = type;
+                this.width = type.width;
+                this.height = type.height;
+                this.x = canvas.width;
+                this.y = type.fromTop ? 30 : canvas.height - this.height;
+                this.speed = type.speed;
+                this.color = type.color;
+            }
+    
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
+    
+            update() {
+                this.x -= this.speed;
+            }
+        }
+    
+        const obstacleTypes = [
+            { width: 15, height: 30, speed: 3, color: 'red', fromTop: false },
+            { width: 30, height: 15, speed: 4, color: 'green', fromTop: false },
+            { width: 20, height: 25, speed: 5, color: 'purple', fromTop: true },
+            { width: 35, height: 20, speed: 6, color: 'orange', fromTop: true }
+        ];
+    
+        let obstacles = [];
+        let score = 0;
+        const gravity = 0.4;
+        const jumpStrength = -8.4;
+        let lastTopObstacleTime = 0;
+        let lastBottomObstacleTime = 0;
+        let gameRunning = false;
+        let keys = { ArrowLeft: false, ArrowRight: false };
+    
+        function createObstacle() {
+            const currentTime = Date.now();
+            const topObstacleInterval = 2000;
+            const bottomObstacleInterval = 2500;
+    
+            if (currentTime - lastTopObstacleTime > topObstacleInterval) {
+                const topTypes = obstacleTypes.filter(type => type.fromTop);
+                const type = topTypes[Math.floor(Math.random() * topTypes.length)];
+                obstacles.push(new Obstacle(type));
+                lastTopObstacleTime = currentTime;
+            }
+    
+            if (currentTime - lastBottomObstacleTime > bottomObstacleInterval) {
+                const bottomTypes = obstacleTypes.filter(type => !type.fromTop);
+                const type = bottomTypes[Math.floor(Math.random() * bottomTypes.length)];
+                obstacles.push(new Obstacle(type));
+                lastBottomObstacleTime = currentTime;
+            }
+        }
+    
+        function drawPlayer() {
+            ctx.fillStyle = 'yellow';
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    
+        function jump() {
+            if (!player.jumping) {
+                player.jumping = true;
+                player.yVelocity = jumpStrength;
+            }
+        }
+    
+        function updatePlayerPosition() {
+            if (player.jumping) {
+                player.yVelocity += gravity;
+                player.y += player.yVelocity;
+    
+                if (player.y > canvas.height - player.radius) {
+                    player.y = canvas.height - player.radius;
+                    player.jumping = false;
+                    player.yVelocity = 0;
+                }
+            }
+    
+            if (keys.ArrowLeft) player.x -= player.speed;
+            if (keys.ArrowRight) player.x += player.speed;
+    
+            if (player.x - player.radius < 0) player.x = player.radius;
+            if (player.x + player.radius > canvas.width) player.x = canvas.width - player.radius;
+            if (player.y - player.radius < 0) player.y = player.radius;
+        }
+    
+        function updateObstacles() {
+            createObstacle();
+    
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                obstacles[i].update();
+                if (obstacles[i].x + obstacles[i].width < 0) {
+                    obstacles.splice(i, 1);
+                    score++;
+                    scoreElement.textContent = score;
+                }
+            }
+        }
+    
+        function checkCollision() {
+            for (let obstacle of obstacles) {
+                const dx = Math.abs(player.x - (obstacle.x + obstacle.width / 2));
+                const dy = Math.abs(player.y - (obstacle.y + obstacle.height / 2));
+    
+                if (dx <= (obstacle.width / 2 + player.radius) && dy <= (obstacle.height / 2 + player.radius)) {
+                    gameOver();
+                    break;
+                }
+            }
+        }
+    
+        function gameOver() {
+            alert('Game Over! Your score: ' + score);
+            score = 0;
+            scoreElement.textContent = score;
+            obstacles = [];
+            player.x = 400;
+            player.y = canvas.height - player.radius;
+            lastTopObstacleTime = 0;
+            lastBottomObstacleTime = 0;
+            gameRunning = false;
+            overlay.style.display = 'flex';
+        }
+    
+        function gameLoop() {
+            if (!gameRunning) return;
+    
+            ctx.fillStyle = 'gray';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            updatePlayerPosition();
+            updateObstacles();
+            checkCollision();
+            
+            drawPlayer();
+            obstacles.forEach(obstacle => obstacle.draw());
+            
+            requestAnimationFrame(gameLoop);
+        }
+    
+        function startGame() {
+            gameRunning = true;
+            overlay.style.display = 'none';
+            gameLoop();
+        }
+    
+        function handleStartInput(event) {
+            if (!gameRunning) {
+                startGame();
+                event.preventDefault();
+            }
+        }
+    
+        gameContainer.addEventListener('click', function() {
+            this.focus();
+        });
+    
+        gameContainer.addEventListener('keydown', function(event) {
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code)) {
+                event.preventDefault();
+            }
+        });
+    
+        document.addEventListener('keydown', (event) => {
+            if (!gameRunning) {
+                handleStartInput(event);
+            } else {
+                if (event.code === 'ArrowUp') {
+                    jump();
+                    event.preventDefault();
+                } else if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
+                    keys[event.code] = true;
+                    event.preventDefault();
+                }
+            }
+        });
+    
+        document.addEventListener('keyup', (event) => {
+            if (event.code === 'ArrowLeft' || event.code === 'ArrowRight') {
+                keys[event.code] = false;
+            }
+        });
+    
+        // 초기 그리기
+        ctx.fillStyle = 'gray';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        drawPlayer();
+    
+        // gameContainer를 포커스 가능하게 만듭니다.
+        gameContainer.tabIndex = -1;
+    </script>
+    <script src="/js/common.js"></script>
+</body>
+</html>
